@@ -20,7 +20,6 @@ namespace DotnetCoreStarter.API.Data
 
             if(!VerifyPassword(password, user.PasswordHash,user.PasswordSalt))
                 return null;
-            
             return user;
         }
 

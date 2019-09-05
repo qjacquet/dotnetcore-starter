@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System;
 
+using Newtonsoft.Json;
+
 namespace DotnetCoreStarter.API.Controllers
 {
     [Route("api/[controller]")]
@@ -28,6 +30,7 @@ namespace DotnetCoreStarter.API.Controllers
         [HttpPost("register")] //<host>/api/auth/register
         public async Task<IActionResult> Register([FromBody] UserForRegisterDto userForRegisterDto){ //Data Transfer Object containing username and password.
             // validate request
+
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -36,8 +39,15 @@ namespace DotnetCoreStarter.API.Controllers
             if(await _repo.UserExists(userForRegisterDto.Username)) 
                 return BadRequest("Username is already taken");
 
-            var userToCreate = new User{
-                Username = userForRegisterDto.Username
+            var userToCreate = new User {
+                Username = userForRegisterDto.Username,
+                Profile = new UserProfile() {
+                    FirstName = userForRegisterDto.FirstName,
+                    LastName = userForRegisterDto.LastName,
+                    Contact = new UserProfile.UserProfileContact() {
+                        Email = userForRegisterDto.Username
+                    }   
+                }
             };
 
             var createUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
@@ -49,6 +59,7 @@ namespace DotnetCoreStarter.API.Controllers
         public async Task<IActionResult> Login([FromBody] UserForLoginDto userForRegisterDto)
         {
             var userFromRepo = await _repo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
+            
             if (userFromRepo == null) //User login failed
                 return Unauthorized();
 
