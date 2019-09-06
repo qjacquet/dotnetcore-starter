@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; 
 using DotnetCoreStarter.API.Data;
 using Microsoft.AspNetCore.Authorization;
+using DotnetCoreStarter.API.Models;
 
 namespace DotnetCoreStarter.API.Controllers
 {
@@ -15,6 +16,7 @@ namespace DotnetCoreStarter.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly DataContext _context;
+
         public UsersController(DataContext context)
         {
             _context = context;
@@ -49,8 +51,28 @@ namespace DotnetCoreStarter.API.Controllers
 
         // PUT api/users/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string user)
+        public async Task<IActionResult> Put(int id, [FromBody] User user)
         {
+            try {
+                // Get the current entity
+                var entity = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+
+                if (entity != null) {
+                    // Set values
+                    entity.Profile = user.Profile;
+
+                    // Update entity
+                    _context.Users.Update(entity);
+
+                    // Set changes
+                    _context.SaveChanges();
+                }
+                
+                return Ok(entity);
+            }
+            catch(Exception) {
+                return BadRequest("Can't update user profile");
+            }
         }
 
         // DELETE api/users/5
@@ -58,5 +80,6 @@ namespace DotnetCoreStarter.API.Controllers
         public void Delete(int id)
         {
         }
+
     }
 }
